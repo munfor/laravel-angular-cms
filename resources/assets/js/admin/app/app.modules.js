@@ -15,7 +15,8 @@
             'app.dashboard',
             'app.users',
             'app.posts',
-            'app.gallery'
+            'app.gallery',
+            'app.permisos'
         ]);
 
 }());

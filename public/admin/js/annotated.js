@@ -15,7 +15,8 @@
             'app.dashboard',
             'app.users',
             'app.posts',
-            'app.gallery'
+            'app.gallery',
+            'app.permisos'
         ]);
 
 }());
@@ -25,16 +26,6 @@
 
     angular
         .module('app.components', []);
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module('app.dashboard', [
-            'app.core'
-        ]);
 
 }());
 (function() {
@@ -53,7 +44,27 @@
     'use strict';
 
     angular
+        .module('app.dashboard', [
+            'app.core'
+        ]);
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
         .module('app.filters', []);
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module('app.login', [
+            'app.core'
+        ]);
 
 }());
 (function() {
@@ -71,7 +82,7 @@
     'use strict';
 
     angular
-        .module('app.login', [
+        .module('app.permisos', [
             'app.core'
         ]);
 
@@ -288,6 +299,34 @@
 
     'use strict';
 
+    appRun.$inject = ["routerHelper"];
+    angular
+        .module('app.core')
+        .run(appRun);
+
+    /* @ngInject */
+    function appRun(routerHelper) {
+        var otherwise = '/admin/404';
+        routerHelper.configureStates(getStates(), otherwise);
+    }
+
+    function getStates() {
+        return [
+            {
+                state: '404',
+                config: {
+                    url: '/admin/404',
+                    templateUrl: '/admin/views/admin.error.index'
+                }
+            }
+        ];
+    }
+
+}());
+(function() {
+
+    'use strict';
+
     angular
         .module("app.dashboard")
         .controller('DashboardController', DashboardController);
@@ -350,34 +389,6 @@
     'use strict';
 
     angular
-        .module('app.core')
-        .run(appRun);
-
-    /* @ngInject */
-    function appRun(routerHelper) {
-        var otherwise = '/admin/404';
-        routerHelper.configureStates(getStates(), otherwise);
-    }
-    appRun.$inject = ["routerHelper"];
-
-    function getStates() {
-        return [
-            {
-                state: '404',
-                config: {
-                    url: '/admin/404',
-                    templateUrl: '/admin/views/admin.error.index'
-                }
-            }
-        ];
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
         .module('app.filters')
         .filter('roles', roles);
 
@@ -390,6 +401,68 @@
     }
 
 }());
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.login")
+        .controller('LoginController', LoginController);
+
+    LoginController.$inject = ['$http', '$window'];
+    /* @nginject */
+    function LoginController($http, $window) {
+
+        var vm = this;
+
+        vm.user = {};
+        vm.login = login;
+
+        /**
+         * Login
+         */
+        function login() {
+            $http.post('/admin/login', {user: vm.user})
+                .success(function (res) {
+                    $window.location.href = '/admin/dashboard';
+                })
+                .error(function(res) {
+                    vm.error = res;
+                });
+        }
+
+    }
+
+}());
+
+(function() {
+
+    'use strict';
+
+    angular
+        .module('app.login')
+        .run(appRun);
+
+    appRun.$inject = ['routerHelper'];
+    /* @ngInject */
+    function appRun(routerHelper) {
+        routerHelper.configureStates(getStates());
+    }
+
+    function getStates() {
+        return [
+            {
+                state: 'login',
+                config: {
+                    url: '/admin/login',
+                    controller: 'LoginController',
+                    controllerAs: 'vm',
+                    title: 'Login'
+                }
+            }
+        ];
+    }
+})();
 (function() {
 
     'use strict';
@@ -631,41 +704,208 @@
     'use strict';
 
     angular
-        .module("app.login")
-        .controller('LoginController', LoginController);
+        .module('app.permisos')
+        .controller('permisosController', permisosController);
 
-    LoginController.$inject = ['$http', '$window'];
+    permisosController.$inject = ['$http', '$timeout', '$stateParams', 'User', 'AuthUser'];
+    
     /* @nginject */
-    function LoginController($http, $window) {
+    function permisosController($http, $timeout, $stateParams, User, AuthUser) {
 
         var vm = this;
 
         vm.user = {};
-        vm.login = login;
+        vm.users = {};
+        vm.authuser = {};
+        vm.create = create;
+        vm.update = update;
+        vm.deleteUser = deleteUser;
+        vm.hideImage = hideImage;
+        vm.deleteImage = deleteImage;
+        vm.showDeleteModal = showDeleteModal;
+        vm.hideDeleteModal = hideDeleteModal;
+        vm.loadMore = loadMore;
+        vm.liveSearch = liveSearch;
+        vm.filterByRole = filterByRole;
+        authUser();
+        if(! $stateParams.id) { getUsers(); }
+        if($stateParams.id) { getUser(); }
 
         /**
-         * Login
+         * Auth user
          */
-        function login() {
-            $http.post('/admin/login', {user: vm.user})
-                .success(function (res) {
-                    $window.location.href = '/admin/dashboard';
-                })
-                .error(function(res) {
-                    vm.error = res;
-                });
+        function authUser() {
+            AuthUser.get().success(function(res) {
+                vm.authUser = res;
+                vm.isUploaded = res.image ? true : false;
+            });
+        }
+
+        /**
+         * Get all
+         */
+        function getUsers() {
+            User.get(function (res) {
+                vm.users = res.data;
+                vm.total = res.total;
+                vm.next = res.next_page_url;
+                vm.ready = true;
+            });
+        }
+
+        /**
+         * find by id
+         */
+        function getUser() {
+            vm.user = User.get({id: $stateParams.id}, function() {
+                vm.ready = true;
+            });
+        }
+
+        /**
+         * Create
+         */
+        function create() {
+            vm.loading = true;
+
+            User.save(vm.user, function (res) {
+                _successResponse(res.message);
+                vm.user = {
+                    user_roles: {
+                        role: 'Role'
+                    }
+                };
+            }, function (err) {
+                _errorResponse(err.data, 'User creation failed see errors below');
+            });
+        }
+
+        /**
+         * update user
+         */
+        function update() {
+            vm.loading = true;
+
+            User.update({id: vm.user.id}, vm.user, function (res) {
+                _successResponse(res.message);
+            }, function (err) {
+                _errorResponse(err.data, "User edition failed see errors below");
+            });
+        }
+
+        /**
+         * Delete
+         */
+        function deleteUser() {
+            User.delete({id: vm.user.id}, function (res) {
+                vm.users.splice(vm.users.indexOf(vm.user), 1);
+                vm.total = vm.total - 1;
+                vm.deleteModal = false;
+                vm.flash = res.message;
+                $timeout(function () {
+                    vm.flash = false;
+                }, 3000);
+            });
+        }
+
+        /**
+         * Show delete modal
+         */
+        function showDeleteModal(user) {
+            vm.user = user;
+            vm.deleteModal = true;
+        }
+
+        /**
+         * Hide delete modal
+         */
+        function hideDeleteModal() {
+            vm.deleteModal = false;
+        }
+
+        /**
+         * load more
+         */
+        function loadMore(url) {
+            $http.get(url).success(function (res) {
+                vm.next = res.next_page_url;
+                vm.users = vm.users.concat(res.data);
+            });
+        }
+
+        /**
+         * Live search
+         */
+        function liveSearch() {
+            $http.post('/admin/api/users/search', {keyword: vm.search}).success(function (res) {
+                vm.users = res.data;
+                vm.total = res.total;
+                vm.next = res.next_page_url;
+            });
+        }
+
+        /**
+         * Filter by role
+         */
+        function filterByRole() {
+            $http.post('/admin/api/users/user-role-filter', {role: vm.roleFilter}).success(function (res) {
+                vm.users = res.data;
+                vm.total = res.total;
+                vm.next = res.next_page_url;
+            });
+        }
+
+        /**
+         * Delete image
+         */
+        function deleteImage(id) {
+            $http.post('/admin/api/destroy-user-image', {id: id}).success(function(res) {
+                document.getElementById('single-uploader').value = null;
+                vm.user.image = null;
+            });
+        }
+
+        /**
+         * Hide image
+         */
+        function hideImage() {
+            document.getElementById('single-uploader').value = null;
+            vm.user.file = false;
+        }
+
+        /**
+         * Success response
+         */
+        function _successResponse(successMessage) {
+            vm.errors = '';
+            vm.flash = successMessage;
+            vm.loading = false;
+            $timeout(function () {
+                vm.flash = false;
+            }, 5000);
+        }
+
+        /**
+         * Errors response
+         */
+        function _errorResponse(errors, flashError) {
+            vm.errors = errors;
+            vm.loading = false;
+            vm.flashError = flashError;
+            $timeout(function () {
+                vm.flashError = false;
+            }, 5000);
         }
 
     }
 
 }());
-
 (function() {
 
     'use strict';
 
     angular
-        .module('app.login')
+        .module('app.permisos')
         .run(appRun);
 
     appRun.$inject = ['routerHelper'];
@@ -677,12 +917,33 @@
     function getStates() {
         return [
             {
-                state: 'login',
+                state: 'permisos',
                 config: {
-                    url: '/admin/login',
-                    controller: 'LoginController',
+                    url: '/admin/permisos',
+                    templateUrl: '/admin/views/admin.permisos.index',
+                    controller: 'permisosController',
                     controllerAs: 'vm',
-                    title: 'Login'
+                    title: 'permisos'
+                }
+            },
+            {
+                state: 'permiso-create',
+                config: {
+                    url: '/admin/permisos/create',
+                    templateUrl: '/admin/views/admin.permisos.create',
+                    controller: 'permisosController',
+                    controllerAs: 'vm',
+                    title: 'Create permiso'
+                }
+            },
+            {
+                state: 'permiso-edit',
+                config: {
+                    url: '/admin/permisos/:id/edit',
+                    templateUrl: '/admin/views/admin.permisos.edit',
+                    controller: 'permisosController',
+                    controllerAs: 'vm',
+                    title: 'Edit permiso'
                 }
             }
         ];

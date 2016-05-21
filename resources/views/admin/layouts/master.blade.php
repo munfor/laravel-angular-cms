@@ -79,6 +79,12 @@
                             Gallery
                         </a>
                     </li>
+                    <li ng-class="{active: mainUrl == 'permisos'}">
+                        <a ui-sref="permisos" ng-click="isCollapsed = !isCollapsed">
+                            <i class="material-icons">monochrome_photos</i>
+                            Permisos
+                        </a>
+                    </li>
                     <li class='visible-xs'>
                         <a href="/admin/logout" target="_self" ng-click="isCollapsed = !isCollapsed">
                             <i class="material-icons">exit_to_app</i>
