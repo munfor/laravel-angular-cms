@@ -1,7 +1,8 @@
 /vendor
-/node_modules
+# /node_modules
 /.idea
 Homestead.yaml
 Homestead.json
 .env
 .DS_Store
+nbproject/private/
