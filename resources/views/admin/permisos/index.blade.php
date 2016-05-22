@@ -21,20 +21,33 @@
                 <a ui-sref="permiso-create">
                     Nuevo permiso
                 </a>
+                
+                <!-- count -->
+                <div class="count">
+                    <span ng-bind="vm.total"></span> permisos
+                </div>
             </div>
 
             <div class="panel-body">
 
                 <div class="count-search">
 
-                    <!-- count -->
-                    <div class="count">
-                        <span ng-bind="vm.total"></span> users
-                    </div>
-
-                    <!-- filter by user role -->
+                    <!-- Formulario de búsqueda por Usuario -->
                     <div class="filter pull-left">
-                        <span>Filter By:</span>
+                        <span>Usuario:</span>
+                        <select ng-model="vm.roleFilter" ng-change="vm.filterByRole()" ng-init="vm.roleFilter = 'Role'">
+                            <option>Role</option>
+                            <option value="0">Not Auth</option>
+                            <option value="1">Auth</option>
+                            <option value="2">Admin</option>
+                            <option value="3">Super Admin</option>
+                            <option value="4">Owner</option>
+                        </select>
+                    </div>                    
+                    
+                    <!-- Formulario de búsqueda por Programa  -->
+                    <div class="filter pull-left">
+                        <span>Programa:</span>
                         <select ng-model="vm.roleFilter" ng-change="vm.filterByRole()" ng-init="vm.roleFilter = 'Role'">
                             <option>Role</option>
                             <option value="0">Not Auth</option>
@@ -48,7 +61,7 @@
                     <!-- search -->
                     <div id="search">
                         <i class="material-icons i-search">search</i>
-                        <input type="text" placeholder="Search" ng-model="vm.search" ng-keydown="vm.liveSearch()" />
+                        <input type="text" placeholder="Buscar" ng-model="vm.search" ng-keydown="vm.liveSearch()" />
                     </div>
 
                 </div>
@@ -58,19 +71,27 @@
                     <table class="table table-striped" id="dataTables-example">
                         <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Email</th>
-                            <th class="table-actions">Action</th>
+                            <th>Empresa</th>
+                            <th>Centro</th>
+                            <th>Secu</th>
+                            <th>Alta</th>
+                            <th>Baja</th>
+                            <th>Modi</th>
+                            <th>Cons</th>
+                            <th class="table-actions"></th>
                         </tr>
 
                         </thead>
                         <tbody id="search_result">
 
-                        <tr class="odd gradeX" ng-repeat="u in vm.users">
-                                <td ng-bind="u.name"></td>
-                                <td ng-bind="u.user_roles.role | roles"></td>
-                                <td ng-bind="u.email"></td>
+                        <tr class="odd gradeX" ng-repeat="u in vm.permisos">
+                                <td ng-bind="u.idEmpresa + ' ' + u.empresa.Nombre"></td>
+                                <td ng-bind="u.idCentro + ' ' + u.centro.Nombre"></td>
+                                <td ng-bind="u.idSecu"></td>
+                                <td ng-bind="u.Alta"></td>
+                                <td ng-bind="u.Baja"></td>
+                                <td ng-bind="u.Modificacion"></td>
+                                <td ng-bind="u.Consulta"></td>
                                 <td class="table-actions">
                                     <a ui-sref="user-edit({id: u.id })">
                                         <div class="action action-edit pull-left">

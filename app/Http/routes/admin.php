@@ -32,7 +32,9 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function ()
             Route::resource('gallery', 'GalleryController');
             Route::post('/gallery/search', 'GalleryController@search');
             Route::post('/destroy-gallery-image', 'GalleryController@destroyImage');
-
+            
+            // Routing permisos
+            Route::resource('permisos', 'PermisosController');
         });
 
         Route::get('/views/{name}', function($name) {

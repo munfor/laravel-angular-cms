@@ -20,33 +20,37 @@
 
             <div class="panel-body">
 
-                <!-- name -->
+                <!-- name 
                 <div class="form-group">
                     <div class="input-group">
                         <input type="text" placeholder="Name" class="form-control" ng-model="vm.user.name"/>
                     </div>
                 </div>
+                -->
 
-                <!-- email -->
+                <!-- email 
                 <div class="form-group">
                     <div class="input-group">
                         <input type="email" placeholder="Email" class="form-control" ng-model="vm.user.email"/>
                     </div>
                 </div>
+                -->
 
-                <!-- Password -->
+                <!-- Password 
                 <div class="form-group">
                     <div class="input-group">
                         <input type="password" placeholder="password" class="form-control" ng-model="vm.user.password"/>
                     </div>
                 </div>
+                -->
 
-                <!-- Repeat password -->
+                <!-- Repeat password 
                 <div class="form-group">
                     <div class="input-group">
                         <input type="password" placeholder="Repeat password" class="form-control" ng-model="vm.user.repassword"/>
                     </div>
                 </div>
+                -->
 
                 <!-- Roles -->
                 <div class="form-group user-roles">
@@ -58,6 +62,16 @@
                             <option value="2" ng-if="vm.authUser.user_roles.role > 2">Admin</option>
                             <option value="3" ng-if="vm.authUser.user_roles.role > 3">Super Admin</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- Selección de permisos -->
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label><input ng-model="vm.permiso.Alta" type="checkbox" value="0">Alta</label>
+                        <label><input ng-model="vm.permiso.Baja" type="checkbox" value="1">Baja</label>
+                        <label><input ng-model="vm.permiso.Modificacion" type="checkbox" value="2">Modificación</label>
+                        <label><input ng-model="vm.permiso.Consulta" type="checkbox" value="3">Consulta</label>
                     </div>
                 </div>
 
