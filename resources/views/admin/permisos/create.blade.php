@@ -65,7 +65,7 @@
                     </div>
                 </div>
                 
-                <!-- SelecciÃ³n de permisos -->
+                <!-- Selección de permisos -->
                 <div class="form-group">
                     <div class="checkbox">
                         <label><input ng-model="vm.permiso.Alta" type="checkbox" value="0">Alta</label>
@@ -93,6 +93,3 @@
         </div>
     </div>
 </div>
-
-
-@include('admin.permisos.index')

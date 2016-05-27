@@ -4,7 +4,8 @@
 
     angular
         .module('app.permisos', [
-            'app.core'
+            'app.core',
+            'restangular'
         ]);
 
 }());

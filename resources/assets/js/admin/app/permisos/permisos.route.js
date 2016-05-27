@@ -37,7 +37,7 @@
             {
                 state: 'permiso-edit',
                 config: {
-                    url: '/admin/permisos/:id/edit',
+                    url: '/admin/permisos/:idProg/:idOper/:idEmpresa/:idCentro/:idSecu/edit',
                     templateUrl: '/admin/views/admin.permisos.edit',
                     controller: 'permisosController',
                     controllerAs: 'vm',

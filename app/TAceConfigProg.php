@@ -41,20 +41,22 @@ class TAceConfigProg extends Model implements AuthenticatableContract, CanResetP
      */
     // protected $hidden = ['password', 'remember_token'];
 
+    
     /**
      * One to one relation
      */
      public function empresa()
      {
-         return $this->hasOne('App\TMaeEmpresas', 'idEmp', 'idEmpresa');
+         return $this->hasOne('App\TEmpre', 'emp', 'idEmpresa');
      }
-     
+
+	
      /**
      * One to one relation
      */
      public function centro()
      {
          // dd($this);         
-         return $this->hasOne('App\TMaeCentrosDestino', 'idEmp', 'idEmpresa');
+         return $this->hasOne('App\TMaeCentrosDestino', 'idCentro', 'idCentro');
      }
 }

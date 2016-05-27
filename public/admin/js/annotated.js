@@ -25,6 +25,16 @@
     'use strict';
 
     angular
+        .module('app.dashboard', [
+            'app.core'
+        ]);
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
         .module('app.components', []);
 
 }());
@@ -44,7 +54,7 @@
     'use strict';
 
     angular
-        .module('app.dashboard', [
+        .module('app.login', [
             'app.core'
         ]);
 
@@ -54,7 +64,10 @@
     'use strict';
 
     angular
-        .module('app.filters', []);
+        .module('app.permisos', [
+            'app.core',
+            'restangular'
+        ]);
 
 }());
 (function() {
@@ -72,9 +85,7 @@
     'use strict';
 
     angular
-        .module('app.login', [
-            'app.core'
-        ]);
+        .module('app.filters', []);
 
 }());
 (function() {
@@ -82,7 +93,7 @@
     'use strict';
 
     angular
-        .module('app.permisos', [
+        .module('app.profile', [
             'app.core'
         ]);
 
@@ -103,8 +114,8 @@
     'use strict';
 
     angular
-        .module('app.profile', [
-            'app.core'
+        .module('app.router', [
+            'ui.router'
         ]);
 
 }());
@@ -113,8 +124,8 @@
     'use strict';
 
     angular
-        .module('app.router', [
-            'ui.router'
+        .module('app.users', [
+            'app.core'
         ]);
 
 }());
@@ -133,11 +144,62 @@
     'use strict';
 
     angular
-        .module('app.users', [
-            'app.core'
-        ]);
+        .module("app.dashboard")
+        .controller('DashboardController', DashboardController);
+
+    DashboardController.$inject = ['$http'];
+    /* @nginject */
+    function DashboardController($http) {
+
+        var vm = this;
+        vm.getData = getData;
+
+        getData();
+
+        /**
+         * Get Data
+         */
+        function getData() {
+            $http.get('/admin/api/dashboard').success(function(res) {
+                vm.users_count      = res.users_count;
+                vm.posts_count      = res.posts_count;
+                vm.galleries_count  = res.galleries_count;
+                vm.ready = true;
+            });
+        }
+    }
 
 }());
+
+(function() {
+
+    'use strict';
+
+    angular
+        .module('app.dashboard')
+        .run(appRun);
+
+    appRun.$inject = ['routerHelper'];
+    /* @ngInject */
+    function appRun(routerHelper) {
+        routerHelper.configureStates(getStates());
+    }
+
+    function getStates() {
+        return [
+            {
+                state: 'dashboard',
+                config: {
+                    url: '/admin/dashboard',
+                    templateUrl: '/admin/views/admin.dashboard.index',
+                    controller: 'DashboardController',
+                    controllerAs: 'vm',
+                    title: 'Dashboard'
+                }
+            }
+        ];
+    }
+})();
 (function() {
 
     'use strict';
@@ -328,29 +390,31 @@
     'use strict';
 
     angular
-        .module("app.dashboard")
-        .controller('DashboardController', DashboardController);
+        .module("app.login")
+        .controller('LoginController', LoginController);
 
-    DashboardController.$inject = ['$http'];
+    LoginController.$inject = ['$http', '$window'];
     /* @nginject */
-    function DashboardController($http) {
+    function LoginController($http, $window) {
 
         var vm = this;
-        vm.getData = getData;
 
-        getData();
+        vm.user = {};
+        vm.login = login;
 
         /**
-         * Get Data
+         * Login
          */
-        function getData() {
-            $http.get('/admin/api/dashboard').success(function(res) {
-                vm.users_count      = res.users_count;
-                vm.posts_count      = res.posts_count;
-                vm.galleries_count  = res.galleries_count;
-                vm.ready = true;
-            });
+        function login() {
+            $http.post('/admin/login', {user: vm.user})
+                .success(function (res) {
+                    $window.location.href = '/admin/dashboard';
+                })
+                .error(function(res) {
+                    vm.error = res;
+                });
         }
+
     }
 
 }());
@@ -360,7 +424,7 @@
     'use strict';
 
     angular
-        .module('app.dashboard')
+        .module('app.login')
         .run(appRun);
 
     appRun.$inject = ['routerHelper'];
@@ -372,13 +436,12 @@
     function getStates() {
         return [
             {
-                state: 'dashboard',
+                state: 'login',
                 config: {
-                    url: '/admin/dashboard',
-                    templateUrl: '/admin/views/admin.dashboard.index',
-                    controller: 'DashboardController',
+                    url: '/admin/login',
+                    controller: 'LoginController',
                     controllerAs: 'vm',
-                    title: 'Dashboard'
+                    title: 'Login'
                 }
             }
         ];
@@ -389,18 +452,315 @@
     'use strict';
 
     angular
-        .module('app.filters')
-        .filter('roles', roles);
+        .module('app.permisos')
+        .controller('permisosController', permisosController);
 
-    function roles() {
-        return function(role) {
-            var roleWords = ['Not Auth', 'Auth', 'Admin', 'Super Admin', 'Owner'];
+    permisosController.$inject = ['$http', '$timeout', '$stateParams', 'User', 'Permiso'];
+    
+    /* @nginject */
+    function permisosController($http, $timeout, $stateParams, User, Permiso) {
 
-            return roleWords[role];
-        }
+            var vm = this;
+                       
+            
+    //====================================================================================
+	            $http({
+			            method: 'GET',
+			            url: '/list/empresas',
+			            data: { applicationId: 3 }
+			        }).success(function (result) {
+			        	vm.selectEmpresas = result;
+	            });
+    //====================================================================================
+                                    
+
+        
+    //            vm.user = {};
+    //            vm.users = {};
+    //            vm.authuser = {};            
+                vm.create = create;
+                // vm.selectCentros = [{}];
+                vm.getCentros = getCentros;
+    //            vm.update = update;
+    //            vm.deleteUser = deleteUser;
+    //            vm.hideImage = hideImage;
+    //            vm.deleteImage = deleteImage;
+    //            vm.showDeleteModal = showDeleteModal;
+    //            vm.hideDeleteModal = hideDeleteModal;
+    //            vm.loadMore = loadMore;
+    //            vm.liveSearch = liveSearch;
+    //            vm.filterByRole = filterByRole;    
+    //            authUser();            
+            
+
+                
+            if(! $stateParams.idProg) { getPermisos(); }
+            
+            
+            if($stateParams.idProg) { getPermiso();  }
+                        
+            
+
+    //            /**
+    //             * Auth user
+    //             */
+    //            function authUser() {
+    //                AuthUser.get().success(function(res) {
+    //                    vm.authUser = res;
+    //                    vm.isUploaded = res.image ? true : false;
+    //                });
+    //            }
+            
+            /**
+             * Al seleccionar una Empresa se rellena la lista de Centros 
+             */
+            function getCentros() {
+            	
+            	// alert('Carga de centros');
+            	
+            	console.log( vm );
+            	
+                $http.post('/list/empresas', { idEmpresa: vm.Empresa.id }).success(function (res) {
+                	
+                	console.log( res );
+                	
+                	vm.selectCentros = res;
+                	
+                    // vm.users = res.data;
+                    // vm.total = res.total;
+                    // vm.next = res.next_page_url;
+                });
+            }
+            
+
+            /**
+             * Get all
+             */
+            function getPermisos() {            	
+                Permiso.get(function (res) {
+                     vm.permisos = res.data;
+                     vm.total = res.total;
+                     vm.next = res.next_page_url;
+                     vm.ready = true;
+                });                
+    //                User.get(function (res) {
+    //                    vm.users = res.data;
+    //                    vm.total = res.total;
+    //                    vm.next = res.next_page_url;
+    //                    vm.ready = true;
+    //                });
+            }
+
+    
+            /**
+             * find by id
+             */
+            function getPermiso() {
+            	console.log('-----------------------------------------');
+            	console.log($stateParams);
+            	console.log('-----------------------------------------');
+                vm.permiso = Permiso.get(
+                		{
+            				idProg: $stateParams.idProg, 
+            				idOper: $stateParams.idOper,
+            				idEmpresa: $stateParams.idEmpresa, 
+            				idCentro: $stateParams.idCentro, 
+            				idSecu: $stateParams.idSecu
+        				}, 
+				function() {                	
+                    vm.ready = true;
+                });
+            }
+    
+            
+            
+            /**
+             * Create
+             */
+            function create() {
+                vm.loading = true;
+    
+                Permiso.save(vm.permiso, function (res) {
+                    _successResponse(res.message);
+                    //    vm.user = {
+                    //        user_roles: {
+                    //            role: 'Role'
+                    //        }
+                    //    };
+                }, function (err) {
+                    _errorResponse(err.data, 'No se ha podido crear el permiso');
+                });
+            }
+    //
+    //        /**
+    //         * update user
+    //         */
+    //        function update() {
+    //            vm.loading = true;
+    //
+    //            User.update({id: vm.user.id}, vm.user, function (res) {
+    //                _successResponse(res.message);
+    //            }, function (err) {
+    //                _errorResponse(err.data, "User edition failed see errors below");
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Delete
+    //         */
+    //        function deleteUser() {
+    //            User.delete({id: vm.user.id}, function (res) {
+    //                vm.users.splice(vm.users.indexOf(vm.user), 1);
+    //                vm.total = vm.total - 1;
+    //                vm.deleteModal = false;
+    //                vm.flash = res.message;
+    //                $timeout(function () {
+    //                    vm.flash = false;
+    //                }, 3000);
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Show delete modal
+    //         */
+    //        function showDeleteModal(user) {
+    //            vm.user = user;
+    //            vm.deleteModal = true;
+    //        }
+    //
+    //        /**
+    //         * Hide delete modal
+    //         */
+    //        function hideDeleteModal() {
+    //            vm.deleteModal = false;
+    //        }
+    //
+    //        /**
+    //         * load more
+    //         */
+    //        function loadMore(url) {
+    //            $http.get(url).success(function (res) {
+    //                vm.next = res.next_page_url;
+    //                vm.users = vm.users.concat(res.data);
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Live search
+    //         */
+    //        function liveSearch() {
+    //            $http.post('/admin/api/users/search', {keyword: vm.search}).success(function (res) {
+    //                vm.users = res.data;
+    //                vm.total = res.total;
+    //                vm.next = res.next_page_url;
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Filter by role
+    //         */
+    //        function filterByRole() {
+    //            $http.post('/admin/api/users/user-role-filter', {role: vm.roleFilter}).success(function (res) {
+    //                vm.users = res.data;
+    //                vm.total = res.total;
+    //                vm.next = res.next_page_url;
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Delete image
+    //         */
+    //        function deleteImage(id) {
+    //            $http.post('/admin/api/destroy-user-image', {id: id}).success(function(res) {
+    //                document.getElementById('single-uploader').value = null;
+    //                vm.user.image = null;
+    //            });
+    //        }
+    //
+    //        /**
+    //         * Hide image
+    //         */
+    //        function hideImage() {
+    //            document.getElementById('single-uploader').value = null;
+    //            vm.user.file = false;
+    //        }
+    
+            /**
+             * Success response
+             */
+            function _successResponse(successMessage) {
+                vm.errors = '';
+                vm.flash = successMessage;
+                vm.loading = false;
+                $timeout(function () {
+                    vm.flash = false;
+                }, 5000);
+            }
+    
+            /**
+             * Errors response
+             */
+            function _errorResponse(errors, flashError) {
+                vm.errors = errors;
+                vm.loading = false;
+                vm.flashError = flashError;
+                $timeout(function () {
+                    vm.flashError = false;
+                }, 5000);
+            }
+
     }
 
 }());
+(function() {
+
+    'use strict';
+
+    angular
+        .module('app.permisos')
+        .run(appRun);
+
+    appRun.$inject = ['routerHelper'];
+    /* @ngInject */
+    function appRun(routerHelper) {
+        routerHelper.configureStates(getStates());
+    }
+
+    function getStates() {
+        return [
+            {
+                state: 'permisos',
+                config: {
+                    url: '/admin/permisos',
+                    templateUrl: '/admin/views/admin.permisos.index',
+                    controller: 'permisosController',
+                    controllerAs: 'vm',
+                    title: 'permisos'
+                }
+            },
+            {
+                state: 'permiso-create',
+                config: {
+                    url: '/admin/permisos/create',
+                    templateUrl: '/admin/views/admin.permisos.create',
+                    controller: 'permisosController',
+                    controllerAs: 'vm',
+                    title: 'Create permiso'
+                }
+            },
+            {
+                state: 'permiso-edit',
+                config: {
+                    url: '/admin/permisos/:idProg/:idOper/:idEmpresa/:idCentro/:idSecu/edit',
+                    templateUrl: '/admin/views/admin.permisos.edit',
+                    controller: 'permisosController',
+                    controllerAs: 'vm',
+                    title: 'Edit permiso'
+                }
+            }
+        ];
+    }
+})();
 (function() {
 
     'use strict';
@@ -642,41 +1002,113 @@
     'use strict';
 
     angular
-        .module("app.login")
-        .controller('LoginController', LoginController);
+        .module('app.filters')
+        .filter('roles', roles);
 
-    LoginController.$inject = ['$http', '$window'];
-    /* @nginject */
-    function LoginController($http, $window) {
+    function roles() {
+        return function(role) {
+            var roleWords = ['Not Auth', 'Auth', 'Admin', 'Super Admin', 'Owner'];
+
+            return roleWords[role];
+        }
+    }
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module('app.profile')
+        .controller('ProfileController', ProfileController);
+
+    ProfileController.$inject = ['$http', '$timeout', 'User', 'AuthUser'];
+    /* @ngInject */
+    function ProfileController($http, $timeout, User, AuthUser) {
 
         var vm = this;
 
-        vm.user = {};
-        vm.login = login;
+        vm.authuser = {};
+
+        vm.update = update;
+        vm.deleteImage = deleteImage;
+        vm.hideImage = hideImage;
+        authUser();
 
         /**
-         * Login
+         * Auth user
          */
-        function login() {
-            $http.post('/admin/login', {user: vm.user})
-                .success(function (res) {
-                    $window.location.href = '/admin/dashboard';
-                })
-                .error(function(res) {
-                    vm.error = res;
-                });
+        function authUser() {
+            AuthUser.get().success(function(res) {
+                vm.authUser = res;
+                vm.ready = true;
+            });
+        }
+
+        /**
+         * update
+         */
+        function update() {
+
+            vm.loading = true;
+
+            User.update({id: vm.authUser.id}, vm.authUser, function (res) {
+                _successResponse(res.message);
+            }, function (err) {
+                _errorResponse(err.data, 'User edition failed, see errors below');
+            });
+        }
+
+        /**
+         * Delete image
+         */
+        function deleteImage(id) {
+            $http.post('/admin/api/destroy-user-image', {id: id}).success(function(res) {
+                vm.authUser.file = null;
+                vm.authUser.image = null;
+            });
+        }
+
+        /**
+         * Hide image
+         */
+        function hideImage() {
+            vm.authUser.file = false;
+        }
+
+        /**
+         * Success response
+         */
+        function _successResponse(successMessage) {
+            vm.errors = '';
+            vm.flash = successMessage;
+            vm.loading = false;
+            $timeout(function () {
+                vm.flash = false;
+            }, 5000);
+        }
+
+        /**
+         * Errors response
+         */
+        function _errorResponse(errors, flashError) {
+            vm.errors = errors;
+            vm.loading = false;
+            vm.flashError = flashError;
+            $timeout(function () {
+                vm.flashError = false;
+            }, 5000);
         }
 
     }
 
 }());
-
 (function() {
 
     'use strict';
 
     angular
-        .module('app.login')
+        .module('app.profile')
         .run(appRun);
 
     appRun.$inject = ['routerHelper'];
@@ -688,273 +1120,13 @@
     function getStates() {
         return [
             {
-                state: 'login',
+                state: 'profile',
                 config: {
-                    url: '/admin/login',
-                    controller: 'LoginController',
+                    url: '/admin/profile',
+                    templateUrl: '/admin/views/admin.profile.index',
+                    controller: 'ProfileController',
                     controllerAs: 'vm',
-                    title: 'Login'
-                }
-            }
-        ];
-    }
-})();
-(function() {
-
-    'use strict';
-
-    angular
-        .module('app.permisos')
-        .controller('permisosController', permisosController);
-
-    permisosController.$inject = ['$http', '$timeout', '$stateParams', 'User', 'Permiso'];
-    
-    /* @nginject */
-    function permisosController($http, $timeout, $stateParams, User, Permiso) {
-
-            var vm = this;
-
-        
-    //            vm.user = {};
-    //            vm.users = {};
-    //            vm.authuser = {};            
-                vm.create = create;
-    //            vm.update = update;
-    //            vm.deleteUser = deleteUser;
-    //            vm.hideImage = hideImage;
-    //            vm.deleteImage = deleteImage;
-    //            vm.showDeleteModal = showDeleteModal;
-    //            vm.hideDeleteModal = hideDeleteModal;
-    //            vm.loadMore = loadMore;
-    //            vm.liveSearch = liveSearch;
-    //            vm.filterByRole = filterByRole;    
-    //            authUser();
-
-
-            if(! $stateParams.id) { getUsers(); }
-            
-            if($stateParams.id) { getUser(); }
-
-    //            /**
-    //             * Auth user
-    //             */
-    //            function authUser() {
-    //                AuthUser.get().success(function(res) {
-    //                    vm.authUser = res;
-    //                    vm.isUploaded = res.image ? true : false;
-    //                });
-    //            }
-
-            /**
-             * Get all
-             */
-            function getUsers() {
-                Permiso.get(function (res) {
-                     vm.permisos = res.data;
-                     vm.total = res.total;
-                     vm.next = res.next_page_url;
-                     vm.ready = true;
-                });                
-    //                User.get(function (res) {
-    //                    vm.users = res.data;
-    //                    vm.total = res.total;
-    //                    vm.next = res.next_page_url;
-    //                    vm.ready = true;
-    //                });
-            }
-
-    //
-    //        /**
-    //         * find by id
-    //         */
-    //        function getUser() {
-    //            vm.user = User.get({id: $stateParams.id}, function() {
-    //                vm.ready = true;
-    //            });
-    //        }
-    //
-            /**
-             * Create
-             */
-            function create() {
-                vm.loading = true;
-    
-                Permiso.save(vm.permiso, function (res) {
-                    _successResponse(res.message);
-                    //    vm.user = {
-                    //        user_roles: {
-                    //            role: 'Role'
-                    //        }
-                    //    };
-                }, function (err) {
-                    _errorResponse(err.data, 'No se ha podido crear el permiso');
-                });
-            }
-    //
-    //        /**
-    //         * update user
-    //         */
-    //        function update() {
-    //            vm.loading = true;
-    //
-    //            User.update({id: vm.user.id}, vm.user, function (res) {
-    //                _successResponse(res.message);
-    //            }, function (err) {
-    //                _errorResponse(err.data, "User edition failed see errors below");
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Delete
-    //         */
-    //        function deleteUser() {
-    //            User.delete({id: vm.user.id}, function (res) {
-    //                vm.users.splice(vm.users.indexOf(vm.user), 1);
-    //                vm.total = vm.total - 1;
-    //                vm.deleteModal = false;
-    //                vm.flash = res.message;
-    //                $timeout(function () {
-    //                    vm.flash = false;
-    //                }, 3000);
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Show delete modal
-    //         */
-    //        function showDeleteModal(user) {
-    //            vm.user = user;
-    //            vm.deleteModal = true;
-    //        }
-    //
-    //        /**
-    //         * Hide delete modal
-    //         */
-    //        function hideDeleteModal() {
-    //            vm.deleteModal = false;
-    //        }
-    //
-    //        /**
-    //         * load more
-    //         */
-    //        function loadMore(url) {
-    //            $http.get(url).success(function (res) {
-    //                vm.next = res.next_page_url;
-    //                vm.users = vm.users.concat(res.data);
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Live search
-    //         */
-    //        function liveSearch() {
-    //            $http.post('/admin/api/users/search', {keyword: vm.search}).success(function (res) {
-    //                vm.users = res.data;
-    //                vm.total = res.total;
-    //                vm.next = res.next_page_url;
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Filter by role
-    //         */
-    //        function filterByRole() {
-    //            $http.post('/admin/api/users/user-role-filter', {role: vm.roleFilter}).success(function (res) {
-    //                vm.users = res.data;
-    //                vm.total = res.total;
-    //                vm.next = res.next_page_url;
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Delete image
-    //         */
-    //        function deleteImage(id) {
-    //            $http.post('/admin/api/destroy-user-image', {id: id}).success(function(res) {
-    //                document.getElementById('single-uploader').value = null;
-    //                vm.user.image = null;
-    //            });
-    //        }
-    //
-    //        /**
-    //         * Hide image
-    //         */
-    //        function hideImage() {
-    //            document.getElementById('single-uploader').value = null;
-    //            vm.user.file = false;
-    //        }
-    
-            /**
-             * Success response
-             */
-            function _successResponse(successMessage) {
-                vm.errors = '';
-                vm.flash = successMessage;
-                vm.loading = false;
-                $timeout(function () {
-                    vm.flash = false;
-                }, 5000);
-            }
-    
-            /**
-             * Errors response
-             */
-            function _errorResponse(errors, flashError) {
-                vm.errors = errors;
-                vm.loading = false;
-                vm.flashError = flashError;
-                $timeout(function () {
-                    vm.flashError = false;
-                }, 5000);
-            }
-
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module('app.permisos')
-        .run(appRun);
-
-    appRun.$inject = ['routerHelper'];
-    /* @ngInject */
-    function appRun(routerHelper) {
-        routerHelper.configureStates(getStates());
-    }
-
-    function getStates() {
-        return [
-            {
-                state: 'permisos',
-                config: {
-                    url: '/admin/permisos',
-                    templateUrl: '/admin/views/admin.permisos.index',
-                    controller: 'permisosController',
-                    controllerAs: 'vm',
-                    title: 'permisos'
-                }
-            },
-            {
-                state: 'permiso-create',
-                config: {
-                    url: '/admin/permisos/create',
-                    templateUrl: '/admin/views/admin.permisos.create',
-                    controller: 'permisosController',
-                    controllerAs: 'vm',
-                    title: 'Create permiso'
-                }
-            },
-            {
-                state: 'permiso-edit',
-                config: {
-                    url: '/admin/permisos/:id/edit',
-                    templateUrl: '/admin/views/admin.permisos.edit',
-                    controller: 'permisosController',
-                    controllerAs: 'vm',
-                    title: 'Edit permiso'
+                    title: 'My Profile'
                 }
             }
         ];
@@ -1195,124 +1367,6 @@
         ];
     }
 })();
-(function() {
-
-    'use strict';
-
-    angular
-        .module('app.profile')
-        .controller('ProfileController', ProfileController);
-
-    ProfileController.$inject = ['$http', '$timeout', 'User', 'AuthUser'];
-    /* @ngInject */
-    function ProfileController($http, $timeout, User, AuthUser) {
-
-        var vm = this;
-
-        vm.authuser = {};
-
-        vm.update = update;
-        vm.deleteImage = deleteImage;
-        vm.hideImage = hideImage;
-        authUser();
-
-        /**
-         * Auth user
-         */
-        function authUser() {
-            AuthUser.get().success(function(res) {
-                vm.authUser = res;
-                vm.ready = true;
-            });
-        }
-
-        /**
-         * update
-         */
-        function update() {
-
-            vm.loading = true;
-
-            User.update({id: vm.authUser.id}, vm.authUser, function (res) {
-                _successResponse(res.message);
-            }, function (err) {
-                _errorResponse(err.data, 'User edition failed, see errors below');
-            });
-        }
-
-        /**
-         * Delete image
-         */
-        function deleteImage(id) {
-            $http.post('/admin/api/destroy-user-image', {id: id}).success(function(res) {
-                vm.authUser.file = null;
-                vm.authUser.image = null;
-            });
-        }
-
-        /**
-         * Hide image
-         */
-        function hideImage() {
-            vm.authUser.file = false;
-        }
-
-        /**
-         * Success response
-         */
-        function _successResponse(successMessage) {
-            vm.errors = '';
-            vm.flash = successMessage;
-            vm.loading = false;
-            $timeout(function () {
-                vm.flash = false;
-            }, 5000);
-        }
-
-        /**
-         * Errors response
-         */
-        function _errorResponse(errors, flashError) {
-            vm.errors = errors;
-            vm.loading = false;
-            vm.flashError = flashError;
-            $timeout(function () {
-                vm.flashError = false;
-            }, 5000);
-        }
-
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module('app.profile')
-        .run(appRun);
-
-    appRun.$inject = ['routerHelper'];
-    /* @ngInject */
-    function appRun(routerHelper) {
-        routerHelper.configureStates(getStates());
-    }
-
-    function getStates() {
-        return [
-            {
-                state: 'profile',
-                config: {
-                    url: '/admin/profile',
-                    templateUrl: '/admin/views/admin.profile.index',
-                    controller: 'ProfileController',
-                    controllerAs: 'vm',
-                    title: 'My Profile'
-                }
-            }
-        ];
-    }
-})();
 /* Help configure the state-base ui.router */
 (function() {
 
@@ -1415,105 +1469,6 @@
     }
 
 })();
-(function() {
-
-    'use strict';
-
-    angular
-        .module("app.services")
-        .factory("AuthUser", AuthUser);
-
-    AuthUser.$inject = ['$http'];
-    /* @ngInject */
-    function AuthUser($http) {
-        var service = {
-            get: get
-        };
-
-        return service;
-
-        function get() {
-            return $http.get('/admin/api/auth-user');
-        }
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module("app.gallery")
-        .factory("Gallery", Gallery);
-
-    Gallery.$inject = ['$resource'];
-    /* @ngInject */
-    function Gallery($resource) {
-        return $resource('/admin/api/gallery/:id', {id: '@_id'}, {
-            update: {
-                method: 'PUT'
-            }
-        });
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module("app.services")
-        .factory("Permiso", Permiso);
-
-    Permiso.$inject = ['$resource'];
-    /* @ngInject */
-    function Permiso($resource) {
-        return $resource('/admin/api/permisos/:id', {id: '@_id'}, {
-            update: {
-                method: 'PUT'
-            }
-        });
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module("app.services")
-        .factory("Post", Post);
-
-    Post.$inject = ['$resource'];
-    /* @ngInject */
-    function Post($resource) {
-        return $resource('/admin/api/posts/:id', {id: '@_id'}, {
-            update: {
-                method: 'PUT'
-            }
-        });
-    }
-
-}());
-(function() {
-
-    'use strict';
-
-    angular
-        .module("app.services")
-        .factory("User", User);
-
-    User.$inject = ['$resource'];
-    /* @ngInject */
-    function User($resource) {
-        return $resource('/admin/api/users/:id', {id: '@_id'}, {
-            update: {
-                method: 'PUT'
-            }
-        });
-    }
-
-}());
 (function() {
 
     'use strict';
@@ -1763,3 +1718,110 @@
         ];
     }
 })();
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.services")
+        .factory("AuthUser", AuthUser);
+
+    AuthUser.$inject = ['$http'];
+    /* @ngInject */
+    function AuthUser($http) {
+        var service = {
+            get: get
+        };
+
+        return service;
+
+        function get() {
+            return $http.get('/admin/api/auth-user');
+        }
+    }
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.gallery")
+        .factory("Gallery", Gallery);
+
+    Gallery.$inject = ['$resource'];
+    /* @ngInject */
+    function Gallery($resource) {
+        return $resource('/admin/api/gallery/:id', {id: '@_id'}, {
+            update: {
+                method: 'PUT'
+            }
+        });
+    }
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.services")
+        .factory("Permiso", Permiso);
+
+    Permiso.$inject = ['$resource'];
+    /* @ngInject */
+    function Permiso($resource) {        
+    	// return $resource('/admin/api/permisos/:idOper/:idProg', {idOper: '@_idOper', idProg: '@_idProg'}, {
+    	// return $resource('/admin/api/permisos/', {}, {
+    	return $resource
+    	(
+    			// '/admin/api/permisos/:idOper/:idProg/:idEmpresa/:idCentro/:idSecu', {},    			
+				// '/admin/api/permisos/:idOper/:idProg/:idEmpresa/:idCentro/:idSecu', { idOper: '@_idOper', idProg: '@_idProg', idEmpresa: '@_idEmpresa', idCentro: '@_idCentro', idSecu: '@_idSecu'},
+    			// '/admin/api/permisos/:idOper', { idOper: '@_idOper', idProg: '@_idProg', idEmpresa: '@_idEmpresa', idCentro: '@_idCentro', idSecu: '@_idSecu'},
+    			'/admin/api/permisos/', {},
+				{ 
+					update: { method: 'PUT' },
+					get : {method : 'GET', params : {mode : ''}}, 
+				}
+		);
+    }
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.services")
+        .factory("Post", Post);
+
+    Post.$inject = ['$resource'];
+    /* @ngInject */
+    function Post($resource) {
+        return $resource('/admin/api/posts/:id', {id: '@_id'}, {
+            update: {
+                method: 'PUT'
+            }
+        });
+    }
+
+}());
+(function() {
+
+    'use strict';
+
+    angular
+        .module("app.services")
+        .factory("User", User);
+
+    User.$inject = ['$resource'];
+    /* @ngInject */
+    function User($resource) {
+        return $resource('/admin/api/users/:id', {id: '@_id'}, {
+            update: {
+                method: 'PUT'
+            }
+        });
+    }
+
+}());

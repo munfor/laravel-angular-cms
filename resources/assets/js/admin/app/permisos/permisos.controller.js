@@ -12,12 +12,26 @@
     function permisosController($http, $timeout, $stateParams, User, Permiso) {
 
             var vm = this;
+                       
+            
+    //====================================================================================
+	            $http({
+			            method: 'GET',
+			            url: '/list/empresas',
+			            data: { applicationId: 3 }
+			        }).success(function (result) {
+			        	vm.selectEmpresas = result;
+	            });
+    //====================================================================================
+                                    
 
         
     //            vm.user = {};
     //            vm.users = {};
     //            vm.authuser = {};            
                 vm.create = create;
+                // vm.selectCentros = [{}];
+                vm.getCentros = getCentros;
     //            vm.update = update;
     //            vm.deleteUser = deleteUser;
     //            vm.hideImage = hideImage;
@@ -27,12 +41,16 @@
     //            vm.loadMore = loadMore;
     //            vm.liveSearch = liveSearch;
     //            vm.filterByRole = filterByRole;    
-    //            authUser();
-
-
-            if(! $stateParams.id) { getUsers(); }
+    //            authUser();            
             
-            if($stateParams.id) { getUser(); }
+
+                
+            if(! $stateParams.idProg) { getPermisos(); }
+            
+            
+            if($stateParams.idProg) { getPermiso();  }
+                        
+            
 
     //            /**
     //             * Auth user
@@ -43,11 +61,33 @@
     //                    vm.isUploaded = res.image ? true : false;
     //                });
     //            }
+            
+            /**
+             * Al seleccionar una Empresa se rellena la lista de Centros 
+             */
+            function getCentros() {
+            	
+            	// alert('Carga de centros');
+            	
+            	console.log( vm );
+            	
+                $http.post('/list/empresas', { idEmpresa: vm.Empresa.id }).success(function (res) {
+                	
+                	console.log( res );
+                	
+                	vm.selectCentros = res;
+                	
+                    // vm.users = res.data;
+                    // vm.total = res.total;
+                    // vm.next = res.next_page_url;
+                });
+            }
+            
 
             /**
              * Get all
              */
-            function getUsers() {
+            function getPermisos() {            	
                 Permiso.get(function (res) {
                      vm.permisos = res.data;
                      vm.total = res.total;
@@ -62,16 +102,29 @@
     //                });
             }
 
-    //
-    //        /**
-    //         * find by id
-    //         */
-    //        function getUser() {
-    //            vm.user = User.get({id: $stateParams.id}, function() {
-    //                vm.ready = true;
-    //            });
-    //        }
-    //
+    
+            /**
+             * find by id
+             */
+            function getPermiso() {
+            	console.log('-----------------------------------------');
+            	console.log($stateParams);
+            	console.log('-----------------------------------------');
+                vm.permiso = Permiso.get(
+                		{
+            				idProg: $stateParams.idProg, 
+            				idOper: $stateParams.idOper,
+            				idEmpresa: $stateParams.idEmpresa, 
+            				idCentro: $stateParams.idCentro, 
+            				idSecu: $stateParams.idSecu
+        				}, 
+				function() {                	
+                    vm.ready = true;
+                });
+            }
+    
+            
+            
             /**
              * Create
              */

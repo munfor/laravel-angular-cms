@@ -14,6 +14,7 @@ require('laravel-elixir-ng-annotate');
 
 var jsPlugins = [
     '../dep/angular/angular.min.js',
+    '../dep/restangular/dist/restangular.min.js',
     '../dep/angular-ui-router/release/angular-ui-router.min.js',
     '../dep/angular-resource/angular-resource.min.js',
     '../dep/textAngular/dist/textAngular-rangy.min.js',

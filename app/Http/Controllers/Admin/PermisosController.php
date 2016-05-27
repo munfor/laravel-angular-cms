@@ -22,8 +22,8 @@ class PermisosController extends Controller
      * @return Response
      */
     public function index()
-    {
-        return TAceConfigProg::with(['empresa', 'centro'])->orderBy('TAceConfigProg.idProg', 'desc')->paginate(3);        
+    {    	
+        return TAceConfigProg::with(['centro', 'empresa'])->orderBy('TAceConfigProg.idProg', 'desc')->paginate(3);        
         // return User::with('userRoles')->orderBy('users.created_at', 'desc')->paginate(5);
     }
 
@@ -80,9 +80,9 @@ class PermisosController extends Controller
         //    }
 
         $user = TAceConfigProg::create($data);
-        // $user->UserRoles()->save(new UserRoles($data));
-
-        return response()->json(['message' => 'User successfully Created']);
+			// $user->UserRoles()->save(new UserRoles($data));
+		return response ()->json ( [ 
+				'message' => 'User successfully Created']);
     }
 
     /**
@@ -91,9 +91,19 @@ class PermisosController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function show($id)
-    {
-        return User::with('UserRoles')->find($id);
+    
+    // idCentro=41&idEmpresa=28&idOper=44&idProg=4&idSecu=01
+    
+    public function show($idOper, $idProg)
+    {   
+		// return TAceConfigProg::with(['centro', 'empresa'])->find([$idOper, $idProg]);
+		
+		return TAceConfigProg::with(['centro', 'empresa'])
+			->where('idOper', '=', $idOper)
+			->where('idProg', '=', $idProg)
+			->first();
+		
+        // return User::with('UserRoles')->find($id);
     }
 
     /**
