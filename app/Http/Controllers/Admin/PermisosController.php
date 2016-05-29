@@ -94,13 +94,16 @@ class PermisosController extends Controller
     
     // idCentro=41&idEmpresa=28&idOper=44&idProg=4&idSecu=01
     
-    public function show($idOper, $idProg)
+    public function show($idProg, $idOper, $idEmpresa, $idCentro, $idSecu)
     {   
 		// return TAceConfigProg::with(['centro', 'empresa'])->find([$idOper, $idProg]);
 		
 		return TAceConfigProg::with(['centro', 'empresa'])
-			->where('idOper', '=', $idOper)
 			->where('idProg', '=', $idProg)
+			->where('idOper', '=', $idOper)
+                        ->where('idEmpresa', '=', $idEmpresa)
+                        ->where('idCentro', '=', $idCentro)
+                        ->where('idSecu', '=', $idSecu)
 			->first();
 		
         // return User::with('UserRoles')->find($id);
@@ -124,8 +127,36 @@ class PermisosController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request, $id)
-    {
+    // public function update(Request $request, $id)    
+    public function update(Request $request)
+    {        
+        //======================================================================
+        // NOTA: para modificar un valor de la ID se tendrán que enviar también
+        // los valores 'viejos' para permitir primero (1) la búsqueda y luego
+        // (2) la modificación.
+        //======================================================================
+        $p = $request->all();
+
+        // (1) Búsqueda por la ID. 
+        $permiso = TAceConfigProg::where('idProg', '=', $p['idProg'])
+                      ->where('idOper', '=', $p['idOper'])
+                      ->where('idEmpresa', '=', $p['idEmpresa'])
+                      ->where('idCentro', '=', $p['idCentro'])
+                      ->where('idSecu', '=', $p['idSecu'])
+                      ->first();
+        
+        dd( $permiso );
+        
+        // (2) Actualización
+        $permiso->update($p);
+        
+        exit();
+        
+        //----------------------------------------------------------------------
+        // ...
+        //======================================================================
+        
+        
         if($request->id == 51)
         {
             return response()->json(['demo' => "You aren't allowed to edit the demo user"], 422);

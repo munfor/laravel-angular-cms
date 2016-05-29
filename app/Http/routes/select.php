@@ -17,7 +17,9 @@ Route::group(['prefix' => 'list', 'namespace' => 'SelectList'], function ()
 		Route::get('/empresas',  ['uses' => 'Empresas@index']);
 		
 		// A partir de un empresa selecciona sus centros asociados
-		Route::post('/empresas', ['uses' => 'Empresas@centros']);
+		// Route::post('/empresas', ['uses' => 'Empresas@centros']);
+                Route::resource('/empresas/idEmpresa', 'Empresas@centros');
+                
 	
 	
 	/*=====================================================================

@@ -65,7 +65,7 @@
                     </div>
                 </div>
                 
-                <!-- Selección de permisos -->
+                <!-- SelecciÃ³n de permisos -->
                 <div class="form-group">
                     <div class="checkbox">
                         <label><input ng-model="vm.permiso.Alta" type="checkbox" value="0">Alta</label>

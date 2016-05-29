@@ -6,6 +6,7 @@
         .module('app.core', [
             'ui.router',
             'ngResource'
+            ,'restangular'
         ]);
 
 }());

@@ -13,13 +13,14 @@ require('laravel-elixir-ng-annotate');
  */
 
 var jsPlugins = [
-    '../dep/angular/angular.min.js',
-    '../dep/restangular/dist/restangular.min.js',
+    '../dep/angular/angular.min.js',    
     '../dep/angular-ui-router/release/angular-ui-router.min.js',
+    '../dep/underscore/underscore.js',
+    '../dep/restangular/dist/restangular.js',
     '../dep/angular-resource/angular-resource.min.js',
     '../dep/textAngular/dist/textAngular-rangy.min.js',
     '../dep/textAngular/dist/textAngular-sanitize.min.js',
-    '../dep/textAngular/dist/textAngular.min.js'
+    '../dep/textAngular/dist/textAngular.min.js'    
 ];
 var cssPlugins = [
     '../dep/bootstrap/dist/css/bootstrap-paper.min.css',

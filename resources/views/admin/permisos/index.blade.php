@@ -27,34 +27,32 @@
                     <span ng-bind="vm.total"></span> permisos                    
                 </div>
             </div>
+            
                         
-
             <div class="panel-body">
 
                 <div class="count-search">					
 
                     <!-- Lista Empresas -->                    		
-					<div class="filter pull-left">
+                    <div class="filter pull-left">
                         <span>Empresa:</span>
-						<select ng-options="e as e.id + ' ' + e.text for e in vm.selectEmpresas" ng-model="vm.Empresa" ng-change="vm.getCentros()">
-							<option></option>
-						</select>
-					</div>
+                        <select ng-options="e as e.id + ' ' + e.text for e in vm.selectEmpresas" ng-model="vm.Empresa" ng-change="vm.getCentros()">
+                                <option></option>
+                        </select>
+                    </div>
 
-
-					<!-- Lista Centros -->                    		
-					<div class="filter pull-left">
+                    <!-- Lista Centros -->                    		
+                    <div class="filter pull-left">
                         <span>Centro:</span>
-						<select ng-options="e as e.id + ' ' + e.text for e in vm.selectCentros" ng-model="vm.Centro">
-							<option></option>
-						</select>
-					</div>
-
+                        <select ng-options="e as e.id + ' ' + e.text for e in vm.selectCentros" ng-model="vm.Centro">
+                                <option></option>
+                        </select>
+                    </div>
 
                     <!-- Lista Centros correspondientes a la Empresa seleccionada  -->
                     <div class="filter pull-left">
                         <span>Centro:</span>
-                        <select ng-model="vm.roleFilter" ng-change="vm.filterByRole()" ng-init="vm.roleFilter = 'Role'">
+                        <select ng-model="vm.roleFilter" ng-change="vm.filterByRole()" ng-init="vm.roleFilter = '4'">
                             <option>Role</option>
                             <option value="0">Not Auth</option>
                             <option value="1">Auth</option>
@@ -72,7 +70,7 @@
                     </div>
 
                 </div>
-
+                
                 <!-- data table -->
                 <div class="table-responsive">
                     <table class="table table-striped" id="dataTables-example">
@@ -91,7 +89,7 @@
                         </thead>
                         <tbody id="search_result">
 
-                        	<tr class="odd gradeX" ng-repeat="p in vm.permisos">
+                        	<tr class="odd gradeX" ng-repeat="p in vm.permisos.data">
                                 <td ng-bind="p.idEmpresa + ' ' + p.empresa.Nombre"></td>
                                 <td ng-bind="p.idCentro + ' ' + p.centro.Nombre"></td>
                                 <td ng-bind="p.idSecu"></td>

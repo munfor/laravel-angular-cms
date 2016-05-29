@@ -26,11 +26,12 @@ class Empresas extends Controller
      *
      * @return Response
      */
-    public function centros(Request $request)
+    // public function centros(Request $request)
+    public function centros($idEmpresa)
     {
     	// return  DB::table('TMaeCentrosDestino')->select('idCentro as id', 'Nombre as text')->orderBy('idCentro')->get();
     	
-    	$idEmpresa = $request->idEmpresa;    	
+    	// $idEmpresa = $request->idEmpresa;    	
 
 		// $users = User::whereHas ( 'TMaeCentrosDestino', function ($query) use ($role) {
 		//   $query->where ( 'idEmpresa', $idEmpresa );

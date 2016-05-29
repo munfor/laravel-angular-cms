@@ -6,23 +6,38 @@
         .module('app.permisos')
         .controller('permisosController', permisosController);
 
-    permisosController.$inject = ['$http', '$timeout', '$stateParams', 'User', 'Permiso'];
+    permisosController.$inject = ['$http', '$timeout', '$stateParams', 'User', 'Permiso', 'Restangular'];
     
     /* @nginject */
-    function permisosController($http, $timeout, $stateParams, User, Permiso) {
+    function permisosController($http, $timeout, $stateParams, User, Permiso, Restangular) {
 
             var vm = this;
                        
             
     //====================================================================================
 	            $http({
-			            method: 'GET',
-			            url: '/list/empresas',
-			            data: { applicationId: 3 }
-			        }).success(function (result) {
-			        	vm.selectEmpresas = result;
-	            });
+                        method: 'GET',
+                        url: '/list/empresas',
+                        data: { applicationId: 3 }
+                        }).success(function (result) {
+                            vm.selectEmpresas = result;                                                        
+                        }
+                    );                                
     //====================================================================================
+    
+    
+            
+            
+            
+    
+            // Restangular.all('accounts').getList().$object;
+            
+//            var permisos = Restangular.all('/admin/api/permisos/');
+//        
+//            permisos.getList().then(function(accounts) {
+//                // $scope.allAccounts = accounts;
+//                console.log( accounts );
+//            });
                                     
 
         
@@ -32,7 +47,7 @@
                 vm.create = create;
                 // vm.selectCentros = [{}];
                 vm.getCentros = getCentros;
-    //            vm.update = update;
+                vm.update = update;
     //            vm.deleteUser = deleteUser;
     //            vm.hideImage = hideImage;
     //            vm.deleteImage = deleteImage;
@@ -61,26 +76,35 @@
     //                    vm.isUploaded = res.image ? true : false;
     //                });
     //            }
+    
+                
+        
+    // vm.selectEmpresas = [{id: '23', text:'EMPRE'}];
+    // vm.selectCentros = [{id: '23', text:'CENTRO'}];
             
             /**
              * Al seleccionar una Empresa se rellena la lista de Centros 
              */
-            function getCentros() {
-            	
-            	// alert('Carga de centros');
-            	
-            	console.log( vm );
-            	
-                $http.post('/list/empresas', { idEmpresa: vm.Empresa.id }).success(function (res) {
-                	
-                	console.log( res );
-                	
-                	vm.selectCentros = res;
-                	
-                    // vm.users = res.data;
-                    // vm.total = res.total;
-                    // vm.next = res.next_page_url;
-                });
+            function getCentros( idEmpresa ) {    
+                
+                console.log( idEmpresa );
+            	      
+                //=====================================================================
+                //    $http.post('/list/empresas', { idEmpresa: vm.permiso.idEmpresa })
+                //        .success(function (res) {                	
+                //            vm.selectCentros = res;
+                //    });
+                //=====================================================================
+                
+                //=====================================================================
+                // var empresas = Restangular.all('list/empresas');
+                // return empresas.getList({ idEmpresa: idEmpresa }).$object;
+                //=====================================================================
+                
+                var empresas = Restangular.all('list/empresas');
+                
+                return empresas.one('idEmpresa', idEmpresa).getList().$object;
+
             }
             
 
@@ -88,39 +112,73 @@
              * Get all
              */
             function getPermisos() {            	
-                Permiso.get(function (res) {
-                     vm.permisos = res.data;
-                     vm.total = res.total;
-                     vm.next = res.next_page_url;
-                     vm.ready = true;
-                });                
-    //                User.get(function (res) {
-    //                    vm.users = res.data;
-    //                    vm.total = res.total;
-    //                    vm.next = res.next_page_url;
-    //                    vm.ready = true;
-    //                });
+                //    Permiso.get(function (res) {
+                //         vm.permisos = res.data;
+                //         vm.total = res.total;
+                //         vm.next = res.next_page_url;
+                //         vm.ready = true;
+                //    });
+                
+                var permisos = Restangular.all('/admin/api/');
+                vm.permisos = permisos.customGET('permisos').$object;                
+                vm.ready = true;
+                
+                //--------------------------------------------------------------
+                //    var p = permisos.customGET('permisos');
+                //    p.then(function(a) {
+                //        vm.permisos = p.$object;
+                //        vm.ready = true;                    
+                //    });
+                //--------------------------------------------------------------
             }
 
     
             /**
              * find by id
              */
-            function getPermiso() {
-            	console.log('-----------------------------------------');
-            	console.log($stateParams);
-            	console.log('-----------------------------------------');
-                vm.permiso = Permiso.get(
-                		{
-            				idProg: $stateParams.idProg, 
-            				idOper: $stateParams.idOper,
-            				idEmpresa: $stateParams.idEmpresa, 
-            				idCentro: $stateParams.idCentro, 
-            				idSecu: $stateParams.idSecu
-        				}, 
-				function() {                	
-                    vm.ready = true;
+            function getPermiso() 
+            {                
+                var permisos = Restangular.all('/admin/api/permisos')
+                
+                //                vm.permiso = permisos.one('idProg', $stateParams.idProg)
+                //                                    .one('idOper', $stateParams.idOper)
+                //                                    .one('idEmpresa', $stateParams.idEmpresa)
+                //                                    .one('idCentro', $stateParams.idCentro)
+                //                                    .one('idSecu', $stateParams.idSecu)
+                //                                    .customGET().then(
+                //                                        function(){
+                //                                            vm.selectCentros = vm.getCentros( vm.permiso.idEmpresa );
+                //                                        }
+                //                                    )
+                //                                    .$object;
+                
+                var promise = permisos.one('idProg', $stateParams.idProg)
+                                      .one('idOper', $stateParams.idOper)
+                                      .one('idEmpresa', $stateParams.idEmpresa)
+                                      .one('idCentro', $stateParams.idCentro)
+                                      .one('idSecu', $stateParams.idSecu)
+                                      .customGET();                                    
+                promise.then(
+                    function(){
+                        vm.permiso = promise.$object;
+                        vm.selectCentros = vm.getCentros( promise.$object.idEmpresa );
+                        vm.ready = true;
                 });
+                
+                
+                // vm.Empresa.id = vm.permiso.idEmpresa;
+                
+                //    vm.permiso = Permiso.get(
+                //                    {
+                //                            idProg: $stateParams.idProg, 
+                //                            idOper: $stateParams.idOper,
+                //                            idEmpresa: $stateParams.idEmpresa, 
+                //                            idCentro: $stateParams.idCentro, 
+                //                            idSecu: $stateParams.idSecu
+                //                            }, 
+                //        function() {                	
+                //            vm.ready = true;
+                //    });
             }
     
             
@@ -142,20 +200,42 @@
                     _errorResponse(err.data, 'No se ha podido crear el permiso');
                 });
             }
-    //
-    //        /**
-    //         * update user
-    //         */
-    //        function update() {
-    //            vm.loading = true;
-    //
-    //            User.update({id: vm.user.id}, vm.user, function (res) {
-    //                _successResponse(res.message);
-    //            }, function (err) {
-    //                _errorResponse(err.data, "User edition failed see errors below");
-    //            });
-    //        }
-    //
+    
+    
+            /**
+             * update user
+             */
+            function update() {
+                
+                alert('update');
+                
+                vm.loading = true;                                
+    
+                //    User.update({id: vm.user.id}, vm.user, function (res) {
+                //        _successResponse(res.message);
+                //    }, function (err) {
+                //        _errorResponse(err.data, "User edition failed see errors below");
+                //    });
+                
+                var permisos = Restangular.all('/admin/api/permisos')
+                
+                var promise = permisos
+                        //.one('idProg', vm.permiso.idProg)
+                        //.one('idOper', vm.permiso.idOper)
+                        //.one('idEmpresa', vm.permiso.idEmpresa)
+                        //.one('idCentro', vm.permiso.idCentro)
+                        //.one('idSecu', vm.permiso.idSecu)
+                        //.customPUT(vm.permiso, "messages", {});
+                        .customPUT(vm.permiso);
+                
+                /***************************************************************
+                / Mirar como hace Laravel saber como ejecutar la función Update
+                / del controlador.
+                /
+                ***************************************************************/
+            }
+
+        
     //        /**
     //         * Delete
     //         */
